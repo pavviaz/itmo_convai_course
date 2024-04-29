@@ -2,25 +2,46 @@ import os
 
 from dff.script import conditions as cnd
 from dff.script import labels as lbl
-from dff.script import TRANSITIONS, RESPONSE, Context, NodeLabel3Type, Message
+from dff.script import GLOBAL, TRANSITIONS, RESPONSE, Context, NodeLabel3Type, Message
 from dff.messengers.telegram import PollingTelegramInterface
 from dff.pipeline import Pipeline
-from dff.utils.testing.common import is_interactive_mode
 
 import re
 
-from dff.script import GLOBAL, TRANSITIONS, RESPONSE, Message
-import dff.script.conditions as cnd
-import dff.script.labels as lbl
-from dff.pipeline import Pipeline
 from dff.utils.testing.common import (
     check_happy_path,
     is_interactive_mode,
     run_interactive_mode,
 )
 
-
+from dff.script.core.message import Button
+from dff.messengers.telegram import (
+    PollingTelegramInterface,
+    TelegramUI,
+    TelegramMessage,
+    RemoveKeyboard,
+)
 #import model
+
+        # "native_keyboard": {
+        #     RESPONSE: TelegramMessage(
+        #         text="Question: What's 2 + 2?",
+        #         # In this case, we use telegram-specific classes.
+        #         # They derive from the generic ones and include more options,
+        #         # e.g. simple keyboard or inline keyboard.
+        #         ui=TelegramUI(
+        #             buttons=[
+        #                 Button(text="5"),
+        #                 Button(text="4"),
+        #             ],
+        #             is_inline=False,
+        #             row_width=4,
+        #         ),
+        #     ),
+        #     TRANSITIONS: {
+        #         ("general", "success"): cnd.exact_match(
+        #             TelegramMessage(text="4")
+        #         ),
 
 def func_response_classifier_request(ctx: Context, pipeline: Pipeline) -> bool:
     request = ctx.last_request.text
@@ -48,19 +69,35 @@ def func_response(ctx: Context, pipeline: Pipeline) -> Message:
     print('3:', ctx.last_response)
     return Message('sample message')
 
-script = { 
+script = {
      "greeting_flow": {
          "start_node": {
              TRANSITIONS: {"greeting_node": cnd.exact_match(Message("/start"))},
          },
-         "greeting_node": {
-             RESPONSE: Message("Greeting node"),
+         "greeting_node" : {
+             RESPONSE: TelegramMessage(
+                 text = "Hello! I can help you where you can go! Please, choose the correct option:",
+                 ui=TelegramUI(
+                     buttons=[
+                         Button(text='Find wonderful place'),
+                         Button(text='Book a hotel or tickets'),
+                         Button(text="I want nothing, I just wanna chat")
+                     ],
+                     is_inline=False,
+                     row_width=4,
+                 )
+             ),
              TRANSITIONS: {
-                 ("get_info_flow", "info_node_start"): cnd.exact_match(Message('info')),
-                 #("get_info_flow", "info_node_start"): func,
-                 ("booking_flow", "booking_node_start"): cnd.exact_match(Message('book')),
-                 #lbl.repeat(): cnd.true()
-                 },
+                 ("get_info_flow", "info_node_start"): cnd.exact_match(
+                     TelegramMessage(text='Find wonderful place')
+                 ),
+                 ("booking_flow", "booking_node_start"): cnd.exact_match(
+                     TelegramMessage(text='Book a hotel or tickets')
+                 ),
+                 ("chat_flow", "chat_node_start"): cnd.exact_match(
+                     TelegramMessage(text='I want nothing, I just wanna chat')
+                 )
+             }
          },
          "fallback_node": {
              RESPONSE: Message("Please, repeat the request"),
@@ -69,21 +106,43 @@ script = {
      },
      "booking_flow": {
          "booking_node_start": {
-             RESPONSE: Message('Start booking'),
+             RESPONSE: TelegramMessage(
+                 'What do you want to book? Please, choose the correct option:',
+                 ui=TelegramUI(
+                     buttons=[
+                         Button(text='Hotel'),
+                         Button(text='Tickets')
+                     ],
+                     is_inline=False,
+                     row_width=4,
+                 )
+                 ),
              TRANSITIONS: {
-                 "booking_node_hotels": cnd.exact_match(Message("hotel")),
-                 "booking_node_tickets": cnd.exact_match(Message("tickets"))
+                 "booking_node_hotels": cnd.exact_match(
+                     TelegramMessage(text='Hotel')
+                 ),
+                 "booking_node_tickets": cnd.exact_match(
+                     TelegramMessage(text='Tickets')
+                 )
                  }
          },
          "booking_node_hotels": {
-             RESPONSE: func_response,
+             RESPONSE: TelegramMessage(
+                 **{
+                     "text": "Please write a preffered dates and country/region/city", "ui": RemoveKeyboard()
+                 }
+             ),
              TRANSITIONS: {
                  "booking_node_hotels": cnd.exact_match(Message('repeat')),
                  "booking_node_start": cnd.exact_match(Message('ok'))
                  }
          },
          "booking_node_tickets": {
-             RESPONSE: Message("Booking tickets"),
+             RESPONSE: TelegramMessage(
+                 **{
+                     "text": "Please write a preffered dates and country/region/city", "ui": RemoveKeyboard()
+                 }
+             ),
              TRANSITIONS: {}
          },
          "booking_end": {
@@ -94,6 +153,16 @@ script = {
      "get_info_flow": {
          "info_node_start": {
              RESPONSE: Message("Get info node"),
+             TRANSITIONS: {}
+         }
+     },
+     "chat_flow": {
+         "chat_node_start": {
+             RESPONSE: TelegramMessage(
+                 **{
+                     "text": "Let's chat!", "ui": RemoveKeyboard()
+                 }
+             ),
              TRANSITIONS: {}
          }
      }
