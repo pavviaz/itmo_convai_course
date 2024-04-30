@@ -21,53 +21,38 @@ from dff.messengers.telegram import (
     TelegramMessage,
     RemoveKeyboard,
 )
-#import model
 
-        # "native_keyboard": {
-        #     RESPONSE: TelegramMessage(
-        #         text="Question: What's 2 + 2?",
-        #         # In this case, we use telegram-specific classes.
-        #         # They derive from the generic ones and include more options,
-        #         # e.g. simple keyboard or inline keyboard.
-        #         ui=TelegramUI(
-        #             buttons=[
-        #                 Button(text="5"),
-        #                 Button(text="4"),
-        #             ],
-        #             is_inline=False,
-        #             row_width=4,
-        #         ),
-        #     ),
-        #     TRANSITIONS: {
-        #         ("general", "success"): cnd.exact_match(
-        #             TelegramMessage(text="4")
-        #         ),
+import model
 
-def func_response_classifier_request(ctx: Context, pipeline: Pipeline) -> bool:
-    request = ctx.last_request.text
-    from_model = None
-    res = False
-    if from_model in ['info', 'booking']:
-        res = True
-    return res
-    
+processor, model = model.get_model()
 
-def func(ctx: Context, pipeline: Pipeline) -> bool:
-    print('1:', ctx.last_request)
-    print('2:', ctx.last_label)
-    print('3:', ctx.last_response)
-    if ctx.last_request.text == 'info':
-        return True
+def chat(ctx: Context, pipeline: Pipeline) -> Message:
+    if ctx.last_response == "Let's chat!":
+        text = ''
+    else:
+        prompt = '[INST]' + ctx.last_request.text + '[/INST]'
+        inputs = processor(prompt, None, return_tensors="pt").to("cuda:0")
+        output = model.generate(**inputs, max_new_tokens=100)
+        text = processor.decode(output[0], skip_special_tokens=True)
+        print (text)
+    return Message(text)
 
-def run_booking_hotels(_: Context, __: Pipeline) -> NodeLabel3Type:
-    print ('booking has done.')
-    return ("booking_flow", "booking_end", 1.0) 
+# def func(ctx: Context, pipeline: Pipeline) -> bool:
+#     print('1:', ctx.last_request)
+#     print('2:', ctx.last_label)
+#     print('3:', ctx.last_response)
+#     if ctx.last_request.text == 'info':
+#         return True
 
-def func_response(ctx: Context, pipeline: Pipeline) -> Message:
-    print('1:', ctx.last_request)
-    print('2:', ctx.last_label)
-    print('3:', ctx.last_response)
-    return Message('sample message')
+# def run_booking_hotels(_: Context, __: Pipeline) -> NodeLabel3Type:
+#     print ('booking has done.')
+#     return ("booking_flow", "booking_end", 1.0) 
+
+# def func_response(ctx: Context, pipeline: Pipeline) -> Message:
+#     print('1:', ctx.last_request)
+#     print('2:', ctx.last_label)
+#     print('3:', ctx.last_response)
+#     return Message('sample message')
 
 script = {
      "greeting_flow": {
@@ -147,7 +132,7 @@ script = {
          },
          "booking_end": {
              RESPONSE: Message("Thank you!"),
-             TRANSITIONS: {("greeting_flow", "greeting_node"): cnd.true}
+             TRANSITIONS: {("greeting_flow", "greeting_node"): cnd.true()}
          }
      },
      "get_info_flow": {
@@ -163,8 +148,12 @@ script = {
                      "text": "Let's chat!", "ui": RemoveKeyboard()
                  }
              ),
-             TRANSITIONS: {}
-         }
+             TRANSITIONS: {"chat_node": cnd.true()}
+         },
+         "chat_node": {
+             RESPONSE: chat,
+             TRANSITIONS: {"chat_node": cnd.true()},
+         },
      }
  }
 
