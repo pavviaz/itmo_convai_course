@@ -1,0 +1,20 @@
+HEALTHCHECK_TIMEOUT = 30
+HEALTHCHECK_SLEEP = 5
+
+TOKEN_CUTOFF = 1536
+TEMPERATURE = 0.2
+TOP_P = 0.7
+MAX_NEW_TOKENS = 1536
+TIMEOUT = 60
+
+WORKER_URL = "worker"
+# WORKER_URL = "localhost"
+CONTROLLER_REFRESH = "refresh_all_workers"
+CONTROLLER_WLIST = "list_models"
+CONTROLLER_WADDR = "get_worker_address"
+CONTROLLER_WSTREAM = "worker_generate_stream"
+
+USER_GREETING = \
+"""
+Hello! 
+"""

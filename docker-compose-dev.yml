@@ -1,0 +1,36 @@
+version: "2.3"
+
+services:  
+  worker:
+    restart: "no"
+    mem_limit: 24G
+    container_name: worker
+
+    build: 
+      context: ./llava_worker
+      dockerfile: Dockerfile
+      args:
+        - LLAVA_URL=${LLAVA_URL}
+        - MODEL_NAME=${MODEL_NAME}
+    command: bash -c "python3 launcher.py"
+
+    env_file:
+      - .env
+
+    runtime: nvidia
+      
+  # dff_api:
+  #   restart: "no"
+  #   mem_limit: 2G
+  #   container_name: dff_api
+
+  #   build: 
+  #     context: ./dff_api
+  #     dockerfile: Dockerfile
+  #   command: bash -c "python3 app/dff_main.py"
+
+  #   volumes:
+  #     - ./dff_api:/dff_api
+
+  #   environment:
+  #     - CONTROLLER_PORT=${CONTROLLER_PORT}
