@@ -22,7 +22,19 @@ from dff.messengers.telegram import (
     RemoveKeyboard,
 )
 
+
 #import model
+
+MODES = {
+    'INFO_MODE': {'flow': 'get_info_flow',
+                  'node': 'info_node_start'
+                  },
+    'BOOKING_MODE': {'flow': 'booking_flow',
+                     'node': 'booking_node_start'},
+    'CHAT_MODE': {'flow': 'chat_flow',
+                  'node': 'chat_node_start'}
+    }
+
 
 #processor, model = model.get_model()
 
@@ -43,12 +55,32 @@ def func1(ctx: Context, pipeline: Pipeline):
     return ctx.misc['var0']
 
 
-# def func(ctx: Context, pipeline: Pipeline) -> bool:
-#     print('1:', ctx.last_request)
-#     print('2:', ctx.last_label)
-#     print('3:', ctx.last_response)
-#     if ctx.last_request.text == 'info':
-#         return True
+def func(ctx: Context, pipeline: Pipeline) -> bool:
+    ctx.misc['class'] = ctx.last_request.text
+#    print('1:', ctx.last_request)
+#    print('2:', ctx.last_label)
+#    print('3:', ctx.last_response)
+    return True
+
+
+def get_answer_from_llm(str, img=None, **kwargs):
+    return {'transit': str, 'country': 'USA'}
+
+def get_node_by_request_type(ctx: Context, _: Pipeline) -> NodeLabel3Type:
+    request = ctx.last_request.text
+    image = ctx.last_request.attachments
+    print (ctx.last_request)
+    print ('att: ', image)
+    res_llm = get_answer_from_llm(request)
+    request_class = res_llm['transit']
+    ctx.misc = {'country': res_llm['country']}
+    print (res_llm)
+    if request_class in list(MODES.keys()):
+        res = (MODES[request_class]['flow'], MODES[request_class]['node'], 1.0)
+    else:
+        res = ("greeting_flow", "fallback_node", 1.0)
+    return res
+
 
 # def run_booking_hotels(_: Context, __: Pipeline) -> NodeLabel3Type:
 #     print ('booking has done.')
@@ -66,29 +98,11 @@ script = {
              TRANSITIONS: {"greeting_node": cnd.exact_match(Message("/start"))},
          },
          "greeting_node" : {
-             MISC: {'var0': func1},
              RESPONSE: TelegramMessage(
                  text = "Hello! I can help you where you can go! Please, choose the correct option:",
-                 ui=TelegramUI(
-                     buttons=[
-                         Button(text='Find wonderful place'),
-                         Button(text='Book a hotel or tickets'),
-                         Button(text="I want nothing, I just wanna chat")
-                     ],
-                     is_inline=False,
-                     row_width=4,
-                 )
              ),
              TRANSITIONS: {
-                 ("get_info_flow", "info_node_start"): cnd.exact_match(
-                     TelegramMessage(text='Find wonderful place')
-                 ),
-                 ("booking_flow", "booking_node_start"): cnd.exact_match(
-                     TelegramMessage(text='Book a hotel or tickets')
-                 ),
-                 ("chat_flow", "chat_node_start"): cnd.exact_match(
-                     TelegramMessage(text='I want nothing, I just wanna chat')
-                 )
+                 get_node_by_request_type: cnd.true(),
              }
          },
          "fallback_node": {

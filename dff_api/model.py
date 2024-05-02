@@ -4,7 +4,7 @@ from PIL import Image
 import requests
 
 model_id = "llava-hf/llava-v1.6-mistral-7b-hf"
-processor = LlavaNextProcessor.from_pretrained(model_id, cache_dir='./cache')
+processor = LlavaNextProcessor.from_pretrained(model_id)
 
 model = LlavaNextForConditionalGeneration.from_pretrained(model_id, torch_dtype=torch.float16, low_cpu_mem_usage=True, load_in_4bit=True) 
 #model.to("cuda:0")
