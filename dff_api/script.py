@@ -21,6 +21,35 @@ from dff.messengers.telegram import (
     TelegramMessage,
     RemoveKeyboard,
 )
+from dff.script.core.message import Image, Attachments
+
+def extract_data(ctx: Context, _: Pipeline):  # A function to extract data with
+    message = ctx.last_request
+    text = ''
+    if message is None:
+        return text, None
+    update = getattr(message, "update", None)
+    if message.text is not None:
+        text = message.text
+    elif message.update.caption is not None:
+        text = message.update.caption
+    
+    if update.photo is None:
+        return text, None
+    #if not isinstance(update, Message):
+    #    return
+    #if (
+        # check attachments in update properties
+    #    not update.photo
+    #    and not (update.document and update.document.mime_type == "image/jpeg")
+    #):
+    #    return
+    photo = update.document or update.photo[-1]
+    file = interface.messenger.get_file(photo.file_id)
+    result = interface.messenger.download_file(file.file_path)
+    with open("001.jpg", "wb+") as new_file:
+        new_file.write(result)
+    return text, result
 
 
 #import model
@@ -67,11 +96,9 @@ def get_answer_from_llm(str, img=None, **kwargs):
     return {'transit': str, 'country': 'USA'}
 
 def get_node_by_request_type(ctx: Context, _: Pipeline) -> NodeLabel3Type:
-    request = ctx.last_request.text
-    image = ctx.last_request.attachments
-    print (ctx.last_request)
-    print ('att: ', image)
-    res_llm = get_answer_from_llm(request)
+    request_text, request_image = extract_data(ctx, pipeline)
+    print (request_text)
+    res_llm = get_answer_from_llm(request_text, request_image)
     request_class = res_llm['transit']
     ctx.misc = {'country': res_llm['country']}
     print (res_llm)
