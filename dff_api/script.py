@@ -108,6 +108,9 @@ def get_node_by_request_type(ctx: Context, _: Pipeline) -> NodeLabel3Type:
         res = ("greeting_flow", "fallback_node", 1.0)
     return res
 
+#def booking_hotel()
+   
+
 
 # def run_booking_hotels(_: Context, __: Pipeline) -> NodeLabel3Type:
 #     print ('booking has done.')
@@ -140,15 +143,7 @@ script = {
      "booking_flow": {
          "booking_node_start": {
              RESPONSE: TelegramMessage(
-                 'What do you want to book? Please, choose the correct option:',
-                 ui=TelegramUI(
-                     buttons=[
-                         Button(text='Hotel'),
-                         Button(text='Tickets')
-                     ],
-                     is_inline=False,
-                     row_width=4,
-                 )
+                 text = 'What do you want to book?'
                  ),
              TRANSITIONS: {
                  "booking_node_hotels": cnd.exact_match(
@@ -161,9 +156,7 @@ script = {
          },
          "booking_node_hotels": {
              RESPONSE: TelegramMessage(
-                 **{
-                     "text": "Please write a preffered dates and country/region/city", "ui": RemoveKeyboard()
-                 }
+                 text = "Please write a preffered dates and country/region/city",
              ),
              TRANSITIONS: {
                  "booking_node_hotels": cnd.exact_match(Message('repeat')),
