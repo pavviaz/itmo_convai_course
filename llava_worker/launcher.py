@@ -16,13 +16,13 @@ COMMANDS = [
     f" --model-path {os.getenv('MODEL_NAME')}"
     f" --load-4bit",
 
-    f"python3 -m llava.serve.model_worker"
-    f" --host 0.0.0.0"
-    f" --controller http://localhost:{os.getenv('CONTROLLER_PORT')}"
-    f" --port {os.getenv('ADD_WORKER_PORT')}"
-    f" --worker http://0.0.0.0:{os.getenv('ADD_WORKER_PORT')}"
-    f" --model-path {os.getenv('MODEL_NAME')}"
-    f" --load-4bit",
+    # f"python3 -m llava.serve.model_worker"
+    # f" --host 0.0.0.0"
+    # f" --controller http://localhost:{os.getenv('CONTROLLER_PORT')}"
+    # f" --port {os.getenv('ADD_WORKER_PORT')}"
+    # f" --worker http://0.0.0.0:{os.getenv('ADD_WORKER_PORT')}"
+    # f" --model-path {os.getenv('MODEL_NAME')}"
+    # f" --load-4bit",
 ]
 
 

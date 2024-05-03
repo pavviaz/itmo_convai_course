@@ -3,7 +3,7 @@ version: "2.3"
 services:  
   worker:
     restart: "no"
-    mem_limit: 24G
+    mem_limit: 16G
     container_name: worker
 
     build: 
@@ -11,7 +11,6 @@ services:
       dockerfile: Dockerfile
       args:
         - LLAVA_URL=${LLAVA_URL}
-        - MODEL_NAME=${MODEL_NAME}
     command: bash -c "python3 launcher.py"
 
     env_file:

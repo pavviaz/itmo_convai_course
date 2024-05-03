@@ -37,11 +37,11 @@ RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install -e .
 RUN python3 -m pip install gdown protobuf
 
-ARG MODEL_NAME
-RUN python3 -c 'from transformers import AutoTokenizer; \
-                from llava.model import *; \
-                import os; \
-                AutoTokenizer.from_pretrained(os.environ["MODEL_NAME"]); \
-                LlavaLlamaForCausalLM.from_pretrained(os.environ["MODEL_NAME"])'
+# ARG MODEL_NAME
+# RUN python3 -c 'from transformers import AutoTokenizer; \
+#                 from llava.model import *; \
+#                 import os; \
+#                 AutoTokenizer.from_pretrained(os.environ["MODEL_NAME"]); \
+#                 LlavaLlamaForCausalLM.from_pretrained(os.environ["MODEL_NAME"])'
 
 COPY launcher.py .
