@@ -1,6 +1,6 @@
 FROM python:3.11
 
-WORKDIR /dff_api
+WORKDIR /neural_api
 
-COPY requirements.txt /dff_api/
+COPY requirements.txt /neural_api/
 RUN pip install -r requirements.txt

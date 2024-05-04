@@ -29,19 +29,7 @@ RUN apt update && \
     rm -rf /var/lib/apt/lists/* && \
     echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
 
-ARG LLAVA_URL
-RUN wget ${LLAVA_URL} && unzip "main.zip" && rm "main.zip"
-WORKDIR /LLaVA-main
+WORKDIR /llava_worker
 
-RUN python3 -m pip install --upgrade pip
-RUN python3 -m pip install -e .
-RUN python3 -m pip install gdown protobuf
-
-# ARG MODEL_NAME
-# RUN python3 -c 'from transformers import AutoTokenizer; \
-#                 from llava.model import *; \
-#                 import os; \
-#                 AutoTokenizer.from_pretrained(os.environ["MODEL_NAME"]); \
-#                 LlavaLlamaForCausalLM.from_pretrained(os.environ["MODEL_NAME"])'
-
-COPY launcher.py .
+COPY requirements.txt /llava_worker/
+RUN pip install -r requirements.txt

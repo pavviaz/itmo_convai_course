@@ -9,15 +9,42 @@ services:
     build: 
       context: ./llava_worker
       dockerfile: Dockerfile
-      args:
-        - LLAVA_URL=${LLAVA_URL}
-    command: bash -c "python3 launcher.py"
+    command: bash -c "uvicorn main:app --host 0.0.0.0 --port ${WORKER_PORT}"
 
-    env_file:
-      - .env
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES}
+      - TRANSFORMERS_CACHE=${TRANSFORMERS_CACHE}
+
+    volumes:
+      - ./llava_worker:/llava_worker
+
+      # TEST ONLY
+      - /home/shace_linux/.cache/huggingface/hub:/cache/
 
     runtime: nvidia
+
+    ports:
+      - ${WORKER_PORT}:${WORKER_PORT}
       
+  neural_api:
+    restart: "no"
+    mem_limit: 2G
+    container_name: neural_api
+
+    build: 
+      context: ./neural_api
+      dockerfile: Dockerfile
+    command: bash -c "uvicorn app.main:app --host 0.0.0.0 --port ${NEURAL_API_PORT}"
+
+    volumes:
+      - ./neural_api:/neural_api
+
+    environment:
+      - WORKER_PORT=${WORKER_PORT}
+
+    ports:
+      - ${NEURAL_API_PORT}:${NEURAL_API_PORT}
+
   # dff_api:
   #   restart: "no"
   #   mem_limit: 2G
@@ -32,4 +59,5 @@ services:
   #     - ./dff_api:/dff_api
 
   #   environment:
-  #     - CONTROLLER_PORT=${CONTROLLER_PORT}
+  #     - TG_BOT_TOKEN=${TG_BOT_TOKEN}
+  #     - NEURAL_API_PORT=${NEURAL_API_PORT}

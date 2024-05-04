@@ -1,20 +1,17 @@
 HEALTHCHECK_TIMEOUT = 30
 HEALTHCHECK_SLEEP = 5
 
-TOKEN_CUTOFF = 1536
-TEMPERATURE = 0.2
-TOP_P = 0.7
-MAX_NEW_TOKENS = 1536
-TIMEOUT = 60
+AVAIL_INTENTS = ["s_info", "c_descr", "ticket_ord"]
 
-WORKER_URL = "worker"
-# WORKER_URL = "localhost"
-CONTROLLER_REFRESH = "refresh_all_workers"
-CONTROLLER_WLIST = "list_models"
-CONTROLLER_WADDR = "get_worker_address"
-CONTROLLER_WSTREAM = "worker_generate_stream"
+API_URL = "neural_api"
+HELPER_EP = "helper"
+MASTER_EP = "master"
+
+DEFAULT_TEXT = "Describe the image given"
 
 USER_GREETING = \
 """
-Hello! 
+Greetings, traveler! I am **Get-Out-Time** bot ✈️
+I am the only one, who know's *everything* about all the countries you can think about
+Moreover, I even know sightseens all over the world! Just send me a photo and ask whatever you want about it
 """
