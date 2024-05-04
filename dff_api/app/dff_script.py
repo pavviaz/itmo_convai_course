@@ -1,14 +1,12 @@
 from dff.script import (
     TRANSITIONS,
     RESPONSE,
-    Message,
     PRE_TRANSITIONS_PROCESSING,
     PRE_RESPONSE_PROCESSING,
 )
 import dff.script.conditions as cnd
 from dff.messengers.telegram import (
     TelegramMessage,
-    telegram_condition,
 )
 
 from utils import (
@@ -24,13 +22,15 @@ script = {
     "root": {
         "start": {
             TRANSITIONS: {
-                ("chat", "start"): telegram_condition(commands=["start", "restart"])
+                ("chat", "start"): lambda ctx, _: ctx.last_request.text
+                in ("/start", "/restart")
             },
         },
         "fallback": {
             RESPONSE: TelegramMessage(text="Please send /restart to begin"),
             TRANSITIONS: {
-                ("chat", "start"): telegram_condition(commands=["start", "restart"])
+                ("chat", "start"): lambda ctx, _: ctx.last_request.text
+                in ("/start", "/restart")
             },
         },
     },
@@ -67,15 +67,31 @@ fallback_label = ("root", "fallback")
 
 happy_path = (
     (
-        Message("What do you think about UAE?"),
-        Message("""The United Arab Emirates (UAE) is a diverse and modern country that offers a familiar environment for Western tourists. The country is known for its modern malls filled with Western products, but also has remote desert dunes and craggy wadis that are less well-known. Alcohol is widely available in Dubai and tourist hotels, but not in Sharjah. The roads and public facilities are modern but can be crowded. Supermarkets offer a variety of products from Europe and the US, along with local and regional items. Major international chains operate widely, but there are still traditional souks filled with products from around the world.
+        TelegramMessage(text="/start"),
+        script["chat"]["start"][RESPONSE],
+    ),
+    (
+        TelegramMessage("What height of Burj Khalifa?"),
+        TelegramMessage("The Burj Khalifa is the tallest building in the world, located in Dubai, United Arab Emirates. It stands at a height of 828 meters (2,717 feet). The building was completed in 2010 and has 163 floors. The Burj Khalifa is a skyscraper, hotel, and office building, and it is part of a larger development called Downtown Dubai. The building is an iconic landmark in the city and is a popular tourist attraction."),
+    ),
+    (
+        TelegramMessage("Can you make a trip there from Moscow from 17.06.2024 to 22.06.2024"),
+        TelegramMessage("""\nHere's your links to book hotel:
+https://travel.yandex.ru/hotels/search/?&adults=2&childrenAges=0&checkinDate=2024-06-17&checkoutDate=2024-06-22&geoId=11499
 
-The UAE has a diverse population and is home to people from different cultures and religions. The country is known for its tolerance and respect for different beliefs and practices. The UAE is also a hub for business and trade, and is home to many international companies and organizations.
-
-The UAE is a popular tourist destination, with a wide variety of tourist attractions, including beaches, desert safaris, ski slopes, and traditional souks. The country is also known for its modern and luxurious hotels, such as the Burj al-Arab in Dubai and the Emirates Palace in Abu Dhabi.
-
-The UAE is a popular destination for people from all over the world, and it is easy for tourists to obtain a visa to enter the country. Citizens of GCC nations do not require a visa and may stay, work, and travel in the UAE indefinitely. Citizens of the European Union (except Ireland), Andorra, Iceland, Liechtenstein, Monaco, Norway, San Marino, Seychelles, Switzerland, and Vatican City do not require a visa for stays of up to 90 days within a 180 day period. Citizens of Australia, Brunei, Canada, China, Hong Kong, Ireland, Japan, Macau, Malaysia, New Zealand, Singapore, South Korea, United Kingdom, and the United States, as well as persons holding British National (Overseas) passports, may obtain a free visa on arrival valid for 30 days, with the possibility of extension for a fee. Citizens of India holding a valid US visa or Green Card do not require an advance visa for visit purposes and can get a visa on arrival, valid for 14 days, from any port of entry. Citizens of any country except Afghanistan, Iraq, Nigeria, Somalia, and Yemen may enter the UAE for up to 96 hours (4 days) after obtaining a transit visa at the airport, provided they continue to a third destination and have a hotel booking. Several other countries are eligible for free hotel/tour-sponsored tourism visas. All other nationalities will be required to apply for a visa in advance, which will require a sponsor from inside the UAE. Israeli passport holders previously needed to make advance arrangements for an entry permit, but following an Israel-UAE peace agreement in August 2020, Israeli and Emirati citizens can now go to each other's countries visa-free. However, some discrimination and distrust may still exist due to cultural, religious, and political differences. Travelers from India may need to obtain a stamp of 'OK to Board' before traveling to the UAE.
-"""),
+And flight:
+https://travel.yandex.ru/avia/search/result/?&adults_seats=2&klass=economy&oneway=2&fromId=c213&toId=c11499&when=2024-06-17&return_date=2024-06-22\n"""),
+    ),
+    (
+        TelegramMessage("What food I can taste there?"),
+        TelegramMessage('The United Arab Emirates (UAE) offers a diverse range of cuisines, reflecting the country\'s multicultural population. Indian and Pakistani cuisine is the most popular in the UAE, with a wide variety of dishes available in restaurants across the country. Grilled chicken is a popular dish, accompanied by rice, bread, and other accompaniments. Traditional Emirati dishes are rare in restaurants, but Yemeni cuisine is available. Pork is not illegal in the UAE, but it can be hard to find and is generally only available in certain stores and restaurants. The UAE offers a wide range of tourist accommodations, including modern, expensive hotels, more modest housing, and low-cost options that vary in condition. Notable landmarks include the Burj al-Arab in Dubai, known as a "7-star hotel," and the Emirates Palace in Abu Dhabi, which also aspires to high standards at a lower price.'),
+    ),
+    (
+        TelegramMessage("And what currency do they use?"),
+        TelegramMessage('The currency used in the United Arab Emirates (UAE) is the United Arab Emirates dirham (AED), also referred to as the dirham (dhs). The conversion rates for the dirham are 3.67 AED for 1 USD, 4.89 AED for 1 EUR, and 5.68 AED for 1 GBP. The dirham is pegged to the USD, so rate variations with this currency are unlikely. The notes used in this currency are in denominations of 5, 10, 20, 50, 100, 200, 500, and 1,000 dirhams. There is also a one dirham coin, with sub-units of 25 and 50 fils coins (100 fils). The UAE offers a wide variety of food from different cuisines, with Indian and Pakistani restaurants being the most popular. Grilled chicken is a popular dish, accompanied by rice, bread, and other accompaniments. Traditional Emirati dishes are rare in restaurants, but Yemeni cuisine is available. Pork is not illegal in the UAE, but it can be hard to find and is generally only available in certain stores and restaurants. The UAE offers a wide range of tourist accommodations, including modern, expensive hotels, more modest housing, and low-cost options that vary in condition. Notable landmarks include the Burj al-Arab in Dubai, known as a "7-star hotel," and the Emirates Palace in Abu Dhabi, which also aspires to high standards at a lower price.'),
+    ),
+    (
+        TelegramMessage("Cool! Thanks!"),
+        TelegramMessage("You're welcome! I'm glad I could help. If you have any more questions, feel free to ask."),
     ),
 )
-    

@@ -3,7 +3,7 @@ import asyncio
 
 from dff.messengers.telegram import PollingTelegramInterface
 from dff.pipeline import Pipeline
-from dff.utils.testing.common import is_interactive_mode, check_happy_path
+from dff.utils.testing.common import check_happy_path
 from dff.stats import (
     OtelInstrumentor,
     set_logger_destination,
@@ -89,7 +89,7 @@ def main():
     return pipeline
 
 
-if __name__ == "__main__" and is_interactive_mode():
+if __name__ == "__main__":
     print("Waiting for API to startup...", flush=True)
     Readiness(
         urls=[f"http://{API_URL}:{os.getenv('NEURAL_API_PORT')}/{HELPER_EP}"],
@@ -98,7 +98,7 @@ if __name__ == "__main__" and is_interactive_mode():
     print("Bot startup", flush=True)
     p = main()
 
-    # check_happy_path(p, happy_path)
+    check_happy_path(p, happy_path)
     print("Happy path!", flush=True)
 
     p.run()

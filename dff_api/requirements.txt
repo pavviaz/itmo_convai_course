@@ -3,3 +3,4 @@ pillow==10.3.0
 dff[telegram]
 dff[stats]
 pytest
+telethon
