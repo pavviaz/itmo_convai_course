@@ -1,4 +1,5 @@
 import os
+import asyncio
 
 from dff.script import conditions as cnd
 from dff.script import labels as lbl
@@ -22,6 +23,18 @@ from dff.messengers.telegram import (
     RemoveKeyboard,
 )
 from dff.script.core.message import Image, Attachments
+from dff.stats import OtelInstrumentor, default_extractors
+
+from dff.pipeline import (
+    Pipeline,
+    ACTOR,
+    Service,
+    ExtraHandlerRuntimeInfo,
+    to_service,
+)
+
+
+
 
 def extract_data(ctx: Context, _: Pipeline):  # A function to extract data with
     message = ctx.last_request
@@ -63,6 +76,30 @@ MODES = {
     'CHAT_MODE': {'flow': 'chat_flow',
                   'node': 'chat_node_start'}
     }
+
+
+#*************************************** STAT
+dff_instrumentor = OtelInstrumentor.from_url("grpc://localhost:4317")
+dff_instrumentor.instrument()
+
+
+# decorated by an OTLP Instrumentor instance
+@dff_instrumentor
+async def get_service_state(ctx: Context, _, info: ExtraHandlerRuntimeInfo):
+    # extract the execution state of a target service
+    data = {
+        "execution_state": info.component.execution_state,
+    }
+    # return the state as an arbitrary dict for further logging
+    return data
+
+# configure `get_service_state` to run after the `heavy_service`
+@to_service(after_handler=[get_service_state])
+async def heavy_service(ctx: Context):
+    _ = ctx  # get something from ctx if needed
+    await asyncio.sleep(0.02)
+#*********************** END STAT
+
 
 
 #processor, model = model.get_model()
@@ -212,15 +249,37 @@ happy_path = (
 
 interface = PollingTelegramInterface(token=os.environ["TG_BOT"])
 
-pipeline = Pipeline.from_script( 
-    script=script,
-    start_label=("greeting_flow", "start_node"),
-    fallback_label=("greeting_flow", "fallback_node"),
-    messenger_interface=interface,
-    # The interface can be passed as a pipeline argument.
+# pipeline = Pipeline.from_script( 
+#     script=script,
+#     start_label=("greeting_flow", "start_node"),
+#     fallback_label=("greeting_flow", "fallback_node"),
+#     messenger_interface=interface,
+#     components: [
+#         heavy_service,
+#         Service(
+#             handler=ACTOR,
+#             after_handler=[default_extractors.get_current_label],
+#         ),
+#     ],    
+#     # The interface can be passed as a pipeline argument.
+# )
+
+#****************** STAT
+pipeline = Pipeline.from_dict(
+    {
+        "script": script,
+        "start_label": ("greeting_flow", "start_node"),
+        "fallback_label": ("greeting_flow", "fallback_node"),
+        "messenger_interface": interface,
+        "components": [ # for stat
+            heavy_service,
+            Service(
+                handler=ACTOR,
+                after_handler=[default_extractors.get_current_label],
+            ),
+        ],
+    }
 )
-
-
 
 def main():
     print ('ok')
