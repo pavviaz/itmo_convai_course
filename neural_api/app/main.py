@@ -71,7 +71,7 @@ async def session_middleware(request: Request, call_next):
         if unexpected_error:
             args = getattr(exc, "args", None)
             detail = args[0] if args else str(exc)
-        app.state.Logger.error(detail, exc_info=unexpected_error)
+        print(detail, flush=True)
         status_code = getattr(exc, "status_code", 500)
         response = JSONResponse(
             content={"detail": str(detail), "success": False}, status_code=status_code

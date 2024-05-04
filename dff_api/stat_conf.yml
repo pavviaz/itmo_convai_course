@@ -1,0 +1,8 @@
+# tutorials/stats/example_config.yaml
+db:
+    driver: clickhousedb+connect
+    name: test
+    user: username
+    host: clickhouse
+    port: 8123
+    table: otel_logs

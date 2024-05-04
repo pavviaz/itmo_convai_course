@@ -5,9 +5,9 @@ class DFFHelperRequest(BaseModel):
     request: str = Field(
         title="User input",
     )
-    img: str | None = Field(
-        default=None,
-        title="Telegram URL input image",
+    last_resp: str | None = Field(
+        default=" ",
+        title="Last resp for helper to understand context",
     )
 
 
@@ -26,7 +26,3 @@ class DFFMasterRequest(BaseModel):
         default=None,
         title="country to describe",
     )
-    # nation: str | None = Field(
-    #     default=None,
-    #     title="nation",
-    # )

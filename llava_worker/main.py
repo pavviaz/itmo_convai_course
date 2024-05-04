@@ -42,6 +42,7 @@ async def session_middleware(request: Request, call_next):
             args = getattr(exc, "args", None)
             detail = args[0] if args else str(exc)
         status_code = getattr(exc, "status_code", 500)
+        print(detail, flush=True)
         response = JSONResponse(
             content={"detail": str(detail), "success": False}, status_code=status_code
         )

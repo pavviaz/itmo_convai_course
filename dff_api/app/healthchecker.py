@@ -2,7 +2,7 @@ from typing import Optional, List
 from time import sleep
 import requests
 
-from app.config import HEALTHCHECK_TIMEOUT, HEALTHCHECK_SLEEP
+from config import HEALTHCHECK_TIMEOUT, HEALTHCHECK_SLEEP
 
 
 class Readiness:
