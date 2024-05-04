@@ -138,7 +138,7 @@ def extract_intent():
             return ctx
 
         ctx.misc["current_req"] = text
-        if update.photo:
+        if update and update.photo:
             photo = update.document or update.photo[-1]
 
             ctx.misc["img_url"] = await get_tg_img_url(photo.file_id)
